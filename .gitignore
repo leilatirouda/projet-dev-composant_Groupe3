@@ -1,0 +1,17 @@
+# Secrets générés par wso2/wso2ctl.py
+wso2/.state.json
+tests/postman_environment.local.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Éditeurs / systèmes
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*.pptx

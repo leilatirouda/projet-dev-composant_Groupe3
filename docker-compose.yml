@@ -1,0 +1,53 @@
+# Groupe 3 SI - API Structures sanitaires derrière WSO2 API Manager 4.6.0
+# Démarrage : docker compose up -d --build
+# WSO2 met 2 à 4 minutes à démarrer : suivre avec  docker compose logs -f wso2am
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: g3-postgres
+    environment:
+      POSTGRES_DB: sante_db
+      POSTGRES_USER: sante
+      POSTGRES_PASSWORD: sante
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"          # 5433 côté machine pour éviter un PostgreSQL local déjà installé
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sante -d sante_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    container_name: g3-api
+    environment:
+      DATABASE_URL: postgresql://sante:sante@postgres:5432/sante_db
+    ports:
+      - "8000:8000"          # accès direct réservé aux tests et à /health
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  wso2am:
+    image: wso2/wso2am:4.6.0
+    container_name: g3-wso2am
+    ports:
+      - "9443:9443"          # Publisher, Developer Portal, Admin Portal, REST API, /oauth2/token
+      - "8243:8243"          # Passerelle HTTPS (appels des clients)
+      - "8280:8280"          # Passerelle HTTP
+    depends_on:
+      - api
+    # Le backend est joint depuis WSO2 par le nom de service : http://api:8000
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+
+volumes:
+  pgdata:
