@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: API Structures sanitaires
+  version: 1.0.0
+  description: |
+    API REST de consultation des structures sanitaires (données fictives).
+    Groupe 3 SI - Projet composants et services web 2026.
+
+    **Accès :** uniquement via la passerelle WSO2 API Manager, avec un jeton OAuth2
+    obtenu par une application abonnée (Developer Portal).
+
+    **Format d'erreur du backend** (400, 404, 503) : objet `Error`.
+    **Erreurs de la passerelle WSO2** (401, 403, 429, 503) : objet `GatewayFault`.
+
+    | Code HTTP | Code WSO2 / backend | Cause |
+    |---|---|---|
+    | 400 | VALIDATION_ERROR | Paramètre invalide (page, size, type, q, id) |
+    | 401 | 900902 | Jeton absent |
+    | 401 | 900901 | Jeton invalide ou expiré |
+    | 401 | 900907 | Souscription bloquée par le Publisher |
+    | 403 | 900908 | Application non abonnée à l'API |
+    | 404 | STRUCTURE_NOT_FOUND | Identifiant inexistant ou structure inactive |
+    | 429 | 900800 | Quota du plan dépassé |
+    | 503 | 700700 | API en état BLOCKED (retrait temporaire de publication) |
+    | 503 | 101503 | Backend injoignable (arrêt technique) |
+    | 503 | DATABASE_UNAVAILABLE | Base de données du backend indisponible |
+  contact:
+    name: Groupe 3 SI
+servers:
+  - url: https://localhost:8243/structures/1.0.0
+    description: Passerelle WSO2 (HTTPS)
+  - url: http://localhost:8280/structures/1.0.0
+    description: Passerelle WSO2 (HTTP)
+security:
+  - default: []
+tags:
+  - name: Structures
+    description: Consultation des structures sanitaires
+paths:
+  /structures:
+    get:
+      tags: [Structures]
+      operationId: listStructures
+      summary: Lister les structures (paginé)
+      description: Liste les structures actives, triées par identifiant.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/region'
+        - $ref: '#/components/parameters/type'
+        - $ref: '#/components/parameters/statut'
+      responses:
+        '200':
+          description: Page de résultats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageStructures'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+  /structures/search:
+    get:
+      tags: [Structures]
+      operationId: searchStructures
+      summary: Rechercher des structures
+      description: Recherche insensible à la casse dans le nom, le code et la commune.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Texte recherché (2 à 100 caractères)
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          example: ouaga
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/region'
+        - $ref: '#/components/parameters/type'
+      responses:
+        '200':
+          description: Page de résultats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageStructures'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+  /structures/{id}:
+    get:
+      tags: [Structures]
+      operationId: getStructure
+      summary: Détail d'une structure
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant numérique (>= 1)
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+      responses:
+        '200':
+          description: La structure demandée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Structure'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Structure inexistante ou inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: STRUCTURE_NOT_FOUND
+                message: Aucune structure active avec l'identifiant 9999
+                details: []
+                path: /v1/structures/9999
+                timestamp: '2026-10-22T10:00:00+00:00'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+components:
+  securitySchemes:
+    default:
+      type: oauth2
+      description: |
+        Jeton OAuth2 délivré par WSO2 (grant client_credentials) :
+        POST https://localhost:9443/oauth2/token avec les clés de l'application.
+      flows:
+        implicit:
+          authorizationUrl: https://localhost:9443/oauth2/authorize
+          scopes: {}
+  parameters:
+    page:
+      name: page
+      in: query
+      description: Numéro de page (commence à 1)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    size:
+      name: size
+      in: query
+      description: Nombre d'éléments par page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    region:
+      name: region
+      in: query
+      description: Filtre exact (insensible à la casse) sur la région
+      schema:
+        type: string
+        maxLength: 60
+      example: Centre
+    type:
+      name: type
+      in: query
+      description: Filtre sur le type de structure
+      schema:
+        $ref: '#/components/schemas/TypeStructure'
+    statut:
+      name: statut
+      in: query
+      description: Filtre sur le statut
+      schema:
+        $ref: '#/components/schemas/Statut'
+  responses:
+    BadRequest:
+      description: Paramètre invalide (backend)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: VALIDATION_ERROR
+            message: Paramètres de requête invalides
+            details:
+              - field: page
+                issue: Input should be greater than or equal to 1
+            path: /v1/structures
+            timestamp: '2026-10-22T10:00:00+00:00'
+    Unauthorized:
+      description: Jeton absent (900902), invalide (900901) ou souscription bloquée (900907) - passerelle
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GatewayFault'
+          example:
+            code: '900902'
+            message: Missing Credentials
+            description: Invalid Credentials. Make sure your API invocation call has a header with the right credentials.
+    Forbidden:
+      description: Application non abonnée à l'API (900908) - passerelle
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GatewayFault'
+    TooManyRequests:
+      description: Quota du plan dépassé (900800) - passerelle
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GatewayFault'
+    Unavailable:
+      description: |
+        API bloquée dans WSO2 (700700), backend injoignable (101503)
+        ou base indisponible (DATABASE_UNAVAILABLE).
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/GatewayFault'
+              - $ref: '#/components/schemas/Error'
+  schemas:
+    TypeStructure:
+      type: string
+      enum: [CHU, CHR, CMA, CM, CSPS, CLINIQUE, DISPENSAIRE, MATERNITE]
+    Statut:
+      type: string
+      enum: [PUBLIC, PRIVE, CONFESSIONNEL, COMMUNAUTAIRE]
+    Structure:
+      type: object
+      required: [id, code, nom, type, statut, region, province, commune]
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: CSPS-0001
+        nom:
+          type: string
+          example: CSPS Kalgondé de Ouagadougou
+        type:
+          $ref: '#/components/schemas/TypeStructure'
+        statut:
+          $ref: '#/components/schemas/Statut'
+        region:
+          type: string
+          example: Centre
+        province:
+          type: string
+          example: Kadiogo
+        commune:
+          type: string
+          example: Ouagadougou
+        telephone:
+          type: string
+          nullable: true
+          example: +226 25 47 72 85
+    PageStructures:
+      type: object
+      required: [page, size, total, totalPages, items]
+      properties:
+        page:
+          type: integer
+          example: 1
+        size:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          description: Nombre total de résultats pour les filtres donnés
+          example: 76
+        totalPages:
+          type: integer
+          example: 8
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Structure'
+    Error:
+      type: object
+      description: Erreur produite par le backend
+      required: [code, message, details, path, timestamp]
+      properties:
+        code:
+          type: string
+          enum: [VALIDATION_ERROR, STRUCTURE_NOT_FOUND, RESOURCE_NOT_FOUND, DATABASE_UNAVAILABLE, INTERNAL_ERROR]
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                nullable: true
+              issue:
+                type: string
+        path:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    GatewayFault:
+      type: object
+      description: Erreur produite par la passerelle WSO2 (avant d'atteindre le backend)
+      properties:
+        code:
+          type: string
+          example: '900800'
+        message:
+          type: string
+          example: Message throttled out
+        description:
+          type: string
