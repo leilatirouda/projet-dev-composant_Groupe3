@@ -397,7 +397,7 @@
                   "  pm.collectionVariables.set(\"t8_count\", 0);",
                   "  console.log(\"Appels avant rejet : \" + n);",
                   "  pm.test(\"HTTP 429 - quota dépassé\", () => pm.response.to.have.status(429));",
-                  "  pm.test(\"Code 900800 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900800\"));",
+                  "  pm.test(\"Code 900804 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900804\"));",
                   "}"
                 ]
               }

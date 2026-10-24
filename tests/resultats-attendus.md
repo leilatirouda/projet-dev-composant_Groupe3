@@ -16,7 +16,7 @@ Manuel : collection `tests/postman_collection.json` (dossiers 0 à 5).
 | T6 | Jeton invalide | aucune | `Authorization: Bearer faux` | 401, code WSO2 **900901** |
 | T7 | Application non abonnée | jeton de `AppNonAbonnee` | `GET .../structures` | 403, code WSO2 **900908** |
 | T7b | Souscription bloquée | `python wso2/wso2ctl.py block-sub` | `GET .../structures` | 401, code WSO2 **900907** (débloquer ensuite : `unblock-sub`) |
-| T8 | Dépassement de quota | plan `Plan10ParMinute` | 11 appels ou plus en moins d'une minute | 429, code WSO2 **900800** |
+| T8 | Dépassement de quota | plan `Plan10ParMinute` | 11 appels ou plus en moins d'une minute | 429, code WSO2 **900804** (quota de l'abonnement dépassé ; le rejet peut venir après le 11e appel car WSO2 décide de façon asynchrone) |
 | T9 | Retrait temporaire de publication | `python wso2/wso2ctl.py block` | `GET .../structures` | 503, code WSO2 **700700** ; `GET http://localhost:8000/health` répond toujours 200 |
 | T10 | Arrêt technique | `docker compose stop api` (API toujours PUBLISHED) | `GET .../structures` | 5xx, code WSO2 **101503** (connexion au backend impossible) |
 | T11 | Nouvelle version | `python wso2/wso2ctl.py new-version` | `GET /structures/2.0.0/structures/1` | 200 avec `district`, `capacite_lits`, `services` ; la v1 passe en DEPRECATED et répond encore |

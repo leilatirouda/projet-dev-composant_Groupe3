@@ -118,7 +118,7 @@ collection = {
                 '  pm.collectionVariables.set("t8_count", 0);',
                 '  console.log("Appels avant rejet : " + n);',
                 f'  {status(429, "quota dépassé")}',
-                f'  {contains("900800")}',
+                f'  {contains("900804")}',
                 '}',
             )),
         ]},
