@@ -1,0 +1,630 @@
+{
+  "info": {
+    "name": "Groupe 3 SI - API Structures via WSO2",
+    "description": "Scénarios T1 à T12 (voir tests/resultats-attendus.md). Environnement : tests/postman_environment.local.json généré par wso2/wso2ctl.py setup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0 - Jetons",
+      "item": [
+        {
+          "name": "Jeton application abonnée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"token\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{consumerKey}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{consumerSecret}}"
+                }
+              ]
+            },
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                }
+              ]
+            },
+            "url": "{{host}}/oauth2/token"
+          }
+        },
+        {
+          "name": "Jeton application NON abonnée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"tokenNoSub\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{consumerKeyNoSub}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{consumerSecretNoSub}}"
+                }
+              ]
+            },
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                }
+              ]
+            },
+            "url": "{{host}}/oauth2/token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 - Fonctionnel (T1-T4)",
+      "item": [
+        {
+          "name": "T1 - Liste paginée (bout en bout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"10 éléments\", () => pm.expect(b.items).to.have.lengthOf(10));",
+                  "pm.test(\"Pagination cohérente\", () => pm.expect(b.totalPages).to.eql(Math.ceil(b.total / b.size)));",
+                  "pm.test(\"Pas de champ v2 en v1\", () => pm.expect(b.items[0]).to.not.have.property(\"capacite_lits\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?page=1&size=10"
+          }
+        },
+        {
+          "name": "T1b - Filtre type=CHU",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Uniquement des CHU\", () => pm.response.json().items.forEach(s => pm.expect(s.type).to.eql(\"CHU\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?type=CHU"
+          }
+        },
+        {
+          "name": "T1c - Recherche q=ouaga",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Résultats contenant ouaga\", () => pm.response.json().items.forEach(s => pm.expect((s.nom + s.commune).toLowerCase()).to.include(\"ouaga\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures/search?q=ouaga"
+          }
+        },
+        {
+          "name": "T2 - Détail id=5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Bonne structure\", () => pm.expect(pm.response.json().id).to.eql(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures/5"
+          }
+        },
+        {
+          "name": "T3 - Structure inexistante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Code STRUCTURE_NOT_FOUND dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"STRUCTURE_NOT_FOUND\"));",
+                  "pm.test(\"Format d'erreur du contrat\", () => pm.expect(pm.response.json()).to.have.all.keys(\"code\",\"message\",\"details\",\"path\",\"timestamp\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures/9999"
+          }
+        },
+        {
+          "name": "T4a - page=-1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Code VALIDATION_ERROR dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?page=-1"
+          }
+        },
+        {
+          "name": "T4b - size=abc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Code VALIDATION_ERROR dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?size=abc"
+          }
+        },
+        {
+          "name": "T4c - type inconnu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Code VALIDATION_ERROR dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?type=HOPITAL"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Sécurité (T5-T7)",
+      "item": [
+        {
+          "name": "T5 - Jeton absent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Code 900902 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900902\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        },
+        {
+          "name": "T6 - Jeton invalide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Code 900901 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900901\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer jeton-invalide-0000"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        },
+        {
+          "name": "T7 - Application non abonnée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Code 900908 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900908\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenNoSub}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Quota (T8) - lancer seul",
+      "item": [
+        {
+          "name": "T8 - Dépassement du plan 10/min",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const n = (pm.collectionVariables.get(\"t8_count\") || 0) + 1;",
+                  "pm.collectionVariables.set(\"t8_count\", n);",
+                  "if (pm.response.code === 200 && n < 25) {",
+                  "  postman.setNextRequest(\"T8 - Dépassement du plan 10/min\");",
+                  "} else {",
+                  "  pm.collectionVariables.set(\"t8_count\", 0);",
+                  "  console.log(\"Appels avant rejet : \" + n);",
+                  "  pm.test(\"HTTP 429 - quota dépassé\", () => pm.response.to.have.status(429));",
+                  "  pm.test(\"Code 900804 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900804\"));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures?size=1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Cycle de vie (après chaque commande wso2ctl)",
+      "item": [
+        {
+          "name": "T9 - API bloquée  [après: wso2ctl block]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 503 - API BLOCKED\", () => pm.response.to.have.status(503));",
+                  "pm.test(\"Code 700700 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"700700\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        },
+        {
+          "name": "T10 - Arrêt technique  [après: docker compose stop api]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Erreur 5xx de la passerelle\", () => pm.expect(pm.response.code).to.be.within(500, 599));",
+                  "pm.test(\"Code 101503 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"101503\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        },
+        {
+          "name": "T7b - Souscription bloquée  [après: wso2ctl block-sub]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Code 900907 dans la réponse\", () => pm.expect(pm.response.text()).to.include(\"900907\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        },
+        {
+          "name": "T11a - v2 avec nouveaux champs  [après: wso2ctl new-version]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"Champs v2 présents\", () => pm.expect(s).to.include.keys(\"district\",\"capacite_lits\",\"services\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/2.0.0/structures/1"
+          }
+        },
+        {
+          "name": "T11b - v2 filtre district",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Filtre district\", () => pm.response.json().items.forEach(s => pm.expect(s.district).to.eql(\"District de Bogodogo\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/2.0.0/structures?district=District de Bogodogo"
+          }
+        },
+        {
+          "name": "T11c - v1 dépréciée répond toujours",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures/1"
+          }
+        },
+        {
+          "name": "T12 - Republication  [après: wso2ctl republish]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{gateway}}/structures/1.0.0/structures"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Backend direct (supervision)",
+      "item": [
+        {
+          "name": "Santé du backend",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Base UP\", () => pm.expect(pm.response.json().database).to.eql(\"UP\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{backend}}/health"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "t8_count",
+      "value": 0
+    }
+  ]
+}
