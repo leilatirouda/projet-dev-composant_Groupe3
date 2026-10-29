@@ -150,8 +150,11 @@ L'explication complète se trouve dans [docs/cycle-de-vie.md](docs/cycle-de-vie.
 Les tests du backend seul demandent une base chargée. Avec Docker : `DATABASE_URL=postgresql://sante:sante@localhost:5433/sante_db pytest -v`
 (PowerShell : `$env:DATABASE_URL="postgresql://sante:sante@localhost:5433/sante_db"; pytest -v`).
 
-- Résultats attendus : [tests/resultats-attendus.md](tests/resultats-attendus.md)
-- Résultats obtenus (dernier `e2e.py`, 16/16) : [tests/resultats-obtenus.md](tests/resultats-obtenus.md)
+- Résultats attendus : [tests/resultats-attendus.docx](tests/resultats-attendus.docx) (Word)
+- Résultats obtenus sur une installation neuve (16/16 de bout en bout, 30/30 backend, 27/27 Postman) :
+  [tests/resultats-obtenus.docx](tests/resultats-obtenus.docx) (Word)
+- Versions texte : [resultats-attendus.md](tests/resultats-attendus.md) et [resultats-obtenus.md](tests/resultats-obtenus.md),
+  ce dernier étant réécrit automatiquement à chaque `python tests/e2e.py`
 - Captures des portails WSO2 et des réponses de la passerelle : [docs/captures/](docs/captures/README.md)
 
 ## Arrêt et remise à zéro
@@ -197,8 +200,8 @@ WSO2 garde sa configuration dans le conteneur. Après un `down`, on relance simp
 
 | Membre | Rôle |
 | --- | --- |
-| Membre 1 | Chef de projet, intégration, README, présentation |
-| Membre 2 | Backend FastAPI |
-| Membre 3 | Base de données et contrats OpenAPI |
-| Membre 4 | WSO2 : routage et cycle de vie |
-| Membre 5 | WSO2 : sécurité, quotas, applications ; tests |
+| LOMPO Ephraim | Chef de projet, intégration, README, présentation |
+| OUOBA Arnaud | Backend FastAPI et ses tests |
+| NIKIEMA Abdoul Fatahou | Base de données et contrats OpenAPI |
+| TIROUDA Leila | WSO2 : routage et cycle de vie |
+| ROUAMBA Frank | WSO2 : sécurité, quotas, applications ; tests |
