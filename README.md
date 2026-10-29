@@ -43,11 +43,25 @@ WSO2 API Manager 4.6.0. Le projet couvre l'ensemble du cycle de vie de l'API :
 | Outil | Version testée | Remarque |
 | --- | --- | --- |
 | Docker Desktop (ou Docker Engine + Compose v2) | 24 ou plus | Donner **au moins 4 Go de RAM** à Docker (WSO2 en prend environ 2 à 3) |
-| Python | 3.10 ou plus | Pour `wso2ctl.py` et `e2e.py` |
-| Postman ou Newman | Newman 6 | `npm install -g newman` |
+| Python | 3.10 ou plus (testé en 3.12 et 3.14) | Pour `wso2ctl.py`, `e2e.py` et les tests du backend |
+| Postman ou Newman | Newman 6 (Node.js 18 ou plus) | `npm install -g newman` |
 | Git | toute version récente | |
 
 Ports libres nécessaires : 5433, 8000, 8243, 8280, 9443.
+
+### Outils installés hors Docker
+
+PostgreSQL, l'API et WSO2 tournent dans Docker. Les outils de configuration et de test s'installent sur la machine :
+
+```bash
+python --version                                   # 3.10 ou plus
+python -m pip install -r wso2/requirements.txt     # wso2ctl.py et tests/e2e.py
+python -m pip install -r api/requirements-dev.txt  # tests du backend (pytest)
+npm install -g newman                              # facultatif : collection Postman en ligne de commande
+```
+
+La configuration de WSO2 (plan, API, publication, applications, souscription) se fait soit par `wso2ctl.py setup`,
+soit à la main en suivant la procédure distincte [docs/wso2-setup.md](docs/wso2-setup.md).
 
 ## Installation sur une machine neuve
 
@@ -106,7 +120,7 @@ Sous Windows PowerShell : `$TOKEN = python wso2/wso2ctl.py token`, puis `curl.ex
 | GET | `/structures/search` | `q` (obligatoire, 2-100 car.), `page`, `size`, `region`, `type`, `district` (v2) | 200, 400 |
 | GET | `/structures/{id}` | `id` entier >= 1 | 200, 400, 404 |
 
-Erreurs de la passerelle sur toutes les routes : 401, 403, 429 et 503. Le détail est dans [openapi/v1.yaml](openapi/v1.yaml).
+Erreurs de la passerelle sur toutes les routes : 401, 403, 429, 500 (backend injoignable) et 503 (API bloquée). Le détail est dans [openapi/v1.yaml](openapi/v1.yaml).
 
 ## Cycle de vie : commandes de démonstration
 
@@ -133,9 +147,12 @@ L'explication complète se trouve dans [docs/cycle-de-vie.md](docs/cycle-de-vie.
 | Quota | `newman run tests/postman_collection.json -e tests/postman_environment.local.json -k --folder "0 - Jetons" --folder "3 - Quota (T8) - lancer seul"` | T8 |
 | Bout en bout | `python tests/e2e.py` | T1 à T12, avec changements d'état, rapport `tests/resultats-obtenus.md` |
 
-Les tests du backend seul demandent une base chargée. Avec Docker : `DATABASE_URL=postgresql://sante:sante@localhost:5433/sante_db pytest -v`.
+Les tests du backend seul demandent une base chargée. Avec Docker : `DATABASE_URL=postgresql://sante:sante@localhost:5433/sante_db pytest -v`
+(PowerShell : `$env:DATABASE_URL="postgresql://sante:sante@localhost:5433/sante_db"; pytest -v`).
 
-Résultats attendus : [tests/resultats-attendus.md](tests/resultats-attendus.md).
+- Résultats attendus : [tests/resultats-attendus.md](tests/resultats-attendus.md)
+- Résultats obtenus (dernier `e2e.py`, 16/16) : [tests/resultats-obtenus.md](tests/resultats-obtenus.md)
+- Captures des portails WSO2 et des réponses de la passerelle : [docs/captures/](docs/captures/README.md)
 
 ## Arrêt et remise à zéro
 
@@ -158,6 +175,8 @@ WSO2 garde sa configuration dans le conteneur. Après un `down`, on relance simp
 | 900908 avec la bonne application | Souscription absente ou sur une autre version | Developer Portal > Applications > Subscriptions |
 | 429 pendant les autres tests | Le quota de 10/min a été consommé par T8 | Attendre une minute ; lancer T8 en dernier |
 | Port 5432 déjà pris | PostgreSQL local | Le projet utilise 5433 côté machine |
+| `Bind for 0.0.0.0:8000 failed: port is already allocated` | Un autre service utilise le port 8000 | Libérer le port 8000 : `tests/e2e.py` l'utilise pour vérifier `/health` (T9b) |
+| T10 met longtemps à répondre | WSO2 tente encore l'ancienne adresse du backend arrêté (40 à 75 s) | Normal ; `e2e.py` attend jusqu'à 120 s |
 | Mac Apple Silicon : image WSO2 lente | Image amd64 émulée | Activer « Use Rosetta » dans Docker Desktop |
 
 ## Structure du dépôt
@@ -169,8 +188,8 @@ WSO2 garde sa configuration dans le conteneur. Après un `down`, on relance simp
 ├── db/                        init.sql, seed.sql, generate_seed.py
 ├── openapi/                   v1.yaml, v2.yaml
 ├── wso2/                      wso2ctl.py (automatisation REST), requirements.txt
-├── tests/                     Postman, e2e.py, résultats attendus
-├── docs/                      procédure WSO2 manuelle, cycle de vie, répartition
+├── tests/                     Postman, e2e.py, résultats attendus et obtenus
+├── docs/                      procédure WSO2 manuelle, cycle de vie, répartition, captures/
 └── presentation/              PowerPoint
 ```
 

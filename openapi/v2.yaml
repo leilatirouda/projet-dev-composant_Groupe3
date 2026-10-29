@@ -38,11 +38,12 @@ info:
 
     | 404 | STRUCTURE_NOT_FOUND | Identifiant inexistant ou structure inactive |
 
-    | 429 | 900800 | Quota du plan dépassé |
+    | 429 | 900804 | Quota du plan dépassé |
 
     | 503 | 700700 | API en état BLOCKED (retrait temporaire de publication) |
 
-    | 503 | 101503 | Backend injoignable (arrêt technique) |
+    | 500 | 101503 | Backend injoignable (arrêt technique) |
+    | 500 | 303001 | Endpoint suspendu par WSO2 pendant 30 s après un échec de connexion |
 
     | 503 | DATABASE_UNAVAILABLE | Base de données du backend indisponible |
 
@@ -89,6 +90,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/BackendUnreachable'
         '503':
           $ref: '#/components/responses/Unavailable'
       x-auth-type: Application & Application User
@@ -130,6 +133,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/BackendUnreachable'
         '503':
           $ref: '#/components/responses/Unavailable'
       x-auth-type: Application & Application User
@@ -176,6 +181,8 @@ paths:
                 timestamp: '2026-10-22T10:00:00+00:00'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/BackendUnreachable'
         '503':
           $ref: '#/components/responses/Unavailable'
       x-auth-type: Application & Application User
@@ -271,13 +278,19 @@ components:
           schema:
             $ref: '#/components/schemas/GatewayFault'
     TooManyRequests:
-      description: Quota du plan dépassé (900800) - passerelle
+      description: Quota du plan dépassé (900804) - passerelle
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GatewayFault'
+    BackendUnreachable:
+      description: Backend injoignable (101503) ou endpoint suspendu par WSO2 (303001) - passerelle
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/GatewayFault'
     Unavailable:
-      description: 'API bloquée dans WSO2 (700700), backend injoignable (101503)
+      description: 'API bloquée dans WSO2 (700700)
 
         ou base indisponible (DATABASE_UNAVAILABLE).
 
@@ -450,7 +463,7 @@ components:
       properties:
         code:
           type: string
-          example: '900800'
+          example: '900804'
         message:
           type: string
           example: Message throttled out
