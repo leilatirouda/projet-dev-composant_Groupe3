@@ -150,9 +150,9 @@ L'explication complète se trouve dans [docs/cycle-de-vie.md](docs/cycle-de-vie.
 Les tests du backend seul demandent une base chargée. Avec Docker : `DATABASE_URL=postgresql://sante:sante@localhost:5433/sante_db pytest -v`
 (PowerShell : `$env:DATABASE_URL="postgresql://sante:sante@localhost:5433/sante_db"; pytest -v`).
 
-- Résultats attendus : [tests/resultats-attendus.docx](tests/resultats-attendus.docx) (Word)
+- Résultats attendus : [tests/resultats-attendus.pdf](tests/resultats-attendus.pdf)
 - Résultats obtenus sur une installation neuve (16/16 de bout en bout, 30/30 backend, 27/27 Postman) :
-  [tests/resultats-obtenus.docx](tests/resultats-obtenus.docx) (Word)
+  [tests/resultats-obtenus.pdf](tests/resultats-obtenus.pdf)
 - Versions texte : [resultats-attendus.md](tests/resultats-attendus.md) et [resultats-obtenus.md](tests/resultats-obtenus.md),
   ce dernier étant réécrit automatiquement à chaque `python tests/e2e.py`
 - Captures des portails WSO2 et des réponses de la passerelle : [docs/captures/](docs/captures/README.md)
