@@ -1,6 +1,6 @@
 # Résultats obtenus (générés par tests/e2e.py)
 
-Exécution du 24/10/2026 à 00:03 : **16/16 scénarios réussis**.
+Exécution du 29/10/2026 à 09:50 : **16/16 scénarios réussis**.
 
 | N° | Scénario | Attendu | Obtenu | Résultat |
 | --- | --- | --- | --- | --- |
@@ -19,4 +19,4 @@ Exécution du 24/10/2026 à 00:03 : **16/16 scénarios réussis**.
 | T10b | Retour à la normale après redémarrage | 200 | `200 {"page":1,"size":10,"total":77,"totalPages":8,"items":[{"id":1,"code":"CSPS-0001","nom":"C` | OK |
 | T11 | v2 avec champs supplémentaires | 200 | `200 {"id":1,"code":"CSPS-0001","nom":"CSPS Kalgondé de Ouagadougou","type":"CSPS","statut":"PU` | OK |
 | T11b | v1 dépréciée répond toujours | 200 | `200 {"id":1,"code":"CSPS-0001","nom":"CSPS Kalgondé de Ouagadougou","type":"CSPS","statut":"PU` | OK |
-| T8 | Dépassement du quota (rejet au 15e appel) | 429 + 900804 | `429 {"code":"900804","message":"Message throttled out","description":"You have exceeded your q` | OK |
+| T8 | Dépassement du quota (rejet au 13e appel) | 429 + 900804 | `429 {"code":"900804","message":"Message throttled out","description":"You have exceeded your q` | OK |
