@@ -3,6 +3,10 @@
 Chaque membre pousse les fichiers de son rôle, sur sa branche, puis ouvre une Pull Request vers `main`.
 Le Membre 1 relit et fusionne. **Avant de pousser, chacun lit et comprend ses fichiers** : le prof posera des questions.
 
+| Membre 1 | Membre 2 | Membre 3 | Membre 4 | Membre 5 |
+| --- | --- | --- | --- | --- |
+| LOMPO Ephraim | OUOBA Arnaud | NIKIEMA Abdoul Fatahou | TIROUDA Leila | ROUAMBA Frank |
+
 | Ordre | Membre | Branche | Fichiers | Message de commit proposé |
 | --- | --- | --- | --- | --- |
 | 1 | Membre 1 | `feat/socle` | `README.md`, `docker-compose.yml`, `.gitignore`, `docs/repartition-commits.md` | `Socle du projet : docker compose et README` |
