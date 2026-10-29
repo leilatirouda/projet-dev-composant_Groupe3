@@ -204,4 +204,4 @@ WSO2 garde sa configuration dans le conteneur. Après un `down`, on relance simp
 | OUOBA Arnaud | Backend FastAPI et ses tests |
 | NIKIEMA Abdoul Fatahou | Base de données et contrats OpenAPI |
 | TIROUDA Leila | WSO2 : routage et cycle de vie |
-| ROUAMBA Frank | WSO2 : sécurité, quotas, applications ; tests |
+| ROUAMBA Franck | WSO2 : sécurité, quotas, applications ; tests |
