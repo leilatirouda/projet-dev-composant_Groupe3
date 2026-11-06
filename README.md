@@ -146,6 +146,7 @@ L'explication complète se trouve dans [docs/cycle-de-vie.md](docs/cycle-de-vie.
 | Postman / Newman | `newman run tests/postman_collection.json -e tests/postman_environment.local.json -k --folder "0 - Jetons" --folder "1 - Fonctionnel (T1-T4)" --folder "2 - Sécurité (T5-T7)"` | T1 à T7 |
 | Quota | `newman run tests/postman_collection.json -e tests/postman_environment.local.json -k --folder "0 - Jetons" --folder "3 - Quota (T8) - lancer seul"` | T8 |
 | Bout en bout | `python tests/e2e.py` | T1 à T12, avec changements d'état, rapport `tests/resultats-obtenus.md` |
+| Démonstration | `python tests/demo.py` | Les mêmes scénarios pas à pas : commande, résultat et explication, avec une pause avant chaque étape (`--etape N` pour reprendre) |
 
 Les tests du backend seul demandent une base chargée. Avec Docker : `DATABASE_URL=postgresql://sante:sante@localhost:5433/sante_db pytest -v`
 (PowerShell : `$env:DATABASE_URL="postgresql://sante:sante@localhost:5433/sante_db"; pytest -v`).

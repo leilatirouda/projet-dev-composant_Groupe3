@@ -5,7 +5,7 @@ Le Membre 1 relit et fusionne. **Avant de pousser, chacun lit et comprend ses fi
 
 | Membre 1 | Membre 2 | Membre 3 | Membre 4 | Membre 5 |
 | --- | --- | --- | --- | --- |
-| LOMPO Ephraim | OUOBA Arnaud | NIKIEMA Abdoul Fatahou | TIROUDA Leila | ROUAMBA Frank |
+| LOMPO Ephraim | OUOBA Arnaud | NIKIEMA Abdoul Fatahou | TIROUDA Leila | ROUAMBA Franck |
 
 | Ordre | Membre | Branche | Fichiers | Message de commit proposé |
 | --- | --- | --- | --- | --- |
